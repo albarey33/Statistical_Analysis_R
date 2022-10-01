@@ -1,10 +1,10 @@
 
-###################################################################.
+#######################################################################################.
 # SCRIPT: FREQUENCY CLAIMS TO ANALYZE TWO GROUPS
 # USE CASE: VISUALIZE THE COMPARISON OF TWO GROUPS - STATISTICAL ANALYSIS
 # EXAMPLE SOURCE: "Course: Data Science - Research Methods in R
-#                          - EDX / Microsoft. Module 3. Lab 3 Causal Claims"
-###################################################################.
+#                          - EDX / Microsoft. Research Module 3. Lab 3 Causal Claims"
+#######################################################################################.
 
 # 0 PREPARE INSTALL CALL PACKAGES -----------------------------------------
 
@@ -18,8 +18,8 @@ lapply(required_packages, library, character.only = TRUE)
 
 # 1 LOAD THE DATA - THREE MEASURES OF LOYALTY    -----------------------------
 
-path            <- "PopulationSamples"       
-dat   <- read.csv(paste0(path,"//Module3Lab2_loyaltydata.csv"))
+path            <- "Data_Files"       
+dat   <- read.csv(paste0(path,"//Module3Lab3_causal.csv"))
 
 head(dat,5)
 
