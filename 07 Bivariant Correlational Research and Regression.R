@@ -133,15 +133,20 @@ hist(lm_model$residuals)
 # * 2.6 95% Confident Interval (ConfInt) of Coefficients ======
 confint(lm_model)
 
-# * 2.7 Regression with Two Variables ==============
+# * 2.7 Regression with Two or More Variables ==============
 lm_model2 <- lm(Happiness ~ GDP + Freedom, data=dat)
 
 summary(lm_model2)
+hist(lm_model2$residuals)
+
 
 # * 2.8 Comparison of Two Models
 anova(lm_model, lm_model2)
 # The predictions were improving in lm_model2: Less residuals, Higher R2)
 
+# Comparison of Standardized Slopes with lm.beta
 
+summary(lm.beta(lm_model2))
+# GDP= 0.6969 vs Freedom=0.3124
 
 # END --------
