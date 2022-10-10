@@ -21,7 +21,7 @@ lapply(required_packages, library, character.only = TRUE)
 # * 0.1 LOAD THE DATA - THREE MEASURES OF LOYALTY    ----------
 
 path            <- "Data_Files"       
-dat   <- read.csv(paste0(path,"//Module5Lab5_regionalhappy.CSV"))
+dat   <- read.csv(paste0(path,"//Module5Labs1_2_regionalhappy.CSV"))
 
 head(dat,5)
 
