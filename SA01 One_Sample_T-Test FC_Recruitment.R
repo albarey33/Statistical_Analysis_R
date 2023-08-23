@@ -125,12 +125,21 @@ df1 <- data.table(df1)
 tail(df1,20)
 
 # TOTAL RESULTS
+#fx_TotalResults <- function(data){
+#  resultCM <- dcast(data, yearweek + UserEmail ~ FamilyagreedFCvisit, value.var = "n", fill = 0)
+#  resultCM <- resultCM %>% mutate(Total = agreed + declined + undecided + undetermined  )
+#  resultCM <- resultCM %>% mutate(PercentAgreed = agreed / Total )
+#  resultCM
+#}
+
 fx_TotalResults <- function(data){
-  resultCM <- dcast(data, yearweek + UserEmail ~ FamilyagreedFCvisit, value.var = "n", fill = 0)
-  resultCM <- resultCM %>% mutate(Total = agreed + declined + undecided + undetermined  )
-  resultCM <- resultCM %>% mutate(PercentAgreed = agreed / Total )
+  resultCM <- data %>%
+    pivot_wider(names_from = FamilyagreedFCvisit, values_from = n, values_fill = 0) %>%
+    mutate(Total = agreed + declined + undecided + undetermined,
+           PercentAgreed = agreed / Total)
   resultCM
 }
+
 
 dfTotal <- fx_TotalResults(df1)
 dfTotal
@@ -139,39 +148,52 @@ sum(dfTotal$Total)
 mu_value <- sum(dfTotal$agreed)/sum(dfTotal$Total)
 mu_value
 
+# RESULTS PER RECRUITER -------------
+#fx_convertdfCM <- function(data, CM){
+#  # Filter CM
+#  data <- data %>% filter(UserEmail == CM)
+#  resultCM <- dcast(data, yearweek + UserEmail ~ FamilyagreedFCvisit, value.var = "n", fill = 0)
+#  resultCM <- resultCM %>% mutate(Total = agreed + declined + undecided + undetermined  )
+#  resultCM <- resultCM %>% mutate(PercentAgreed = agreed / Total )
+#  resultCM <- resultCM[resultCM$Total>4,] # eliminating outliers
+#  resultCM
+#}
+
 # Results per Recruiter
 fx_convertdfCM <- function(data, CM){
   # Filter CM
   data <- data %>% filter(UserEmail == CM)
-  resultCM <- dcast(data, yearweek + UserEmail ~ FamilyagreedFCvisit, value.var = "n", fill = 0)
-  resultCM <- resultCM %>% mutate(Total = agreed + declined + undecided + undetermined  )
-  resultCM <- resultCM %>% mutate(PercentAgreed = agreed / Total )
+  resultCM <- data %>% pivot_wider(names_from = FamilyagreedFCvisit, 
+                      values_from = n, values_fill = 0) %>%
+    mutate(Total = agreed + declined + undecided + undetermined,
+           PercentAgreed = agreed / Total)
   resultCM <- resultCM[resultCM$Total>4,] # eliminating outliers
   resultCM
 }
 
 dfCM01 <- fx_convertdfCM(df1, "CM01")
+dfCM01 <- dfCM01 %>% select(-c("NA"))
+dfCM01 %>% group_by(UserEmail) %>% tally()
 dfCM01
 sum(dfCM01$agreed)/sum(dfCM01$Total)
 dfCM02 <- fx_convertdfCM(df1, "CM02")
-dfCM02
+dfCM02 %>% group_by(UserEmail) %>% tally()
 sum(dfCM02$agreed)/sum(dfCM02$Total)
 dfCM03 <- fx_convertdfCM(df1, "CM03")
-dfCM03
+dfCM03 %>% group_by(UserEmail) %>% tally()
 sum(dfCM03$agreed)/sum(dfCM03$Total)
 
 # COMBINE TO PLOT IN HISTOGRAMS  -------
 
-combo <- rbind(dfCM01, dfCM02, dfCM03, fill=TRUE)
+combo <- rbind(dfCM01, dfCM02, dfCM03)
 
 # Combine Histogram and Density Plots for Percentages of Agreement
 ggplot(combo, aes(PercentAgreed, fill = UserEmail)) +
   scale_fill_manual(values=c("blue", "darkgreen", "orange")) +
   geom_histogram(alpha=0.7, binwidth=0.01, position="identity") +
   geom_density(alpha = 0.2) +
-  geom_vline(xintercept = 0.83166, size = 0.01, color = "red")
-
-
+  geom_vline(xintercept = 0.83166, size = 0.01, color = "red") + 
+  ggtitle("Combined Histogram and Density Plots for Percentages of Agreement")
 
 # Print the melted dataframe
 #print(melted_df)
