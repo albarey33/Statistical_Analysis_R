@@ -79,7 +79,7 @@ df <- do.call(dplyr::bind_rows, tibbles)
 
 dim(df)
 head(df,30)
-
+tail(df,30)
 
 df$Index <- paste0('E',stringr::str_pad(1:nrow(df), 4, side="left", pad="0"))
 head(df)
@@ -113,8 +113,8 @@ df
 df$yearweek <- paste0(format.Date(df$CaseOpen_DDCHECK, "%Y"), "/", 
                   sprintf("%02d", week(df$CaseOpen_DDCHECK)))
 df$yearweek[is.na(df$yearweek)]
-
-
+as.Date(df$CaseOpen_DDCHECK)
+df %>% filter(as.Date(CaseOpen_DDCHECK) == "2023-08-11")
 ### 
 
 df1 <- df %>% group_by(yearweek, FamilyagreedFCvisit, UserEmail) %>% tally()
@@ -152,10 +152,26 @@ fx_convertdfCM <- function(data, CM){
 
 dfCM01 <- fx_convertdfCM(df1, "CM01")
 dfCM01
+sum(dfCM01$agreed)/sum(dfCM01$Total)
 dfCM02 <- fx_convertdfCM(df1, "CM02")
 dfCM02
+sum(dfCM02$agreed)/sum(dfCM02$Total)
 dfCM03 <- fx_convertdfCM(df1, "CM03")
 dfCM03
+sum(dfCM03$agreed)/sum(dfCM03$Total)
+
+# COMBINE TO PLOT IN HISTOGRAMS  -------
+
+combo <- rbind(dfCM01, dfCM02, dfCM03, fill=TRUE)
+
+# Combine Histogram and Density Plots for Percentages of Agreement
+ggplot(combo, aes(PercentAgreed, fill = UserEmail)) +
+  scale_fill_manual(values=c("blue", "darkgreen", "orange")) +
+  geom_histogram(alpha=0.7, binwidth=0.01, position="identity") +
+  geom_density(alpha = 0.2) +
+  geom_vline(xintercept = 0.83166, size = 0.01, color = "red")
+
+
 
 # Print the melted dataframe
 #print(melted_df)
