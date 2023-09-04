@@ -150,3 +150,4 @@ summary(lm.beta(lm_model2))
 # GDP= 0.6969 vs Freedom=0.3124
 
 # END --------
+
