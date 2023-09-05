@@ -14,7 +14,8 @@ st <- Sys.time()
 
 # Load-multiple-packages-at-once
 required_packages <- c("dplyr", "ggplot2", "lubridate", 
-                       "data.table", "tidyverse", "reshape2", "psych")
+                       "data.table", "tidyverse", 
+                       "reshape2", "psych", "heatmaply")
 lapply(required_packages, library, character.only = TRUE)
 
 # 1 READ THE DOWNLOADED DATA CSV FILES -------------------------
@@ -101,7 +102,6 @@ ggplot(data = df_twoprods, aes(x = MarketingSpend,
     x = "Marketing Spend",
     y = "Sales"
   ) +
-  #theme_minimal() + 
   expand_limits(x = 70, y = 100)
 
 # * 2.4 Scatter Plot Sales vs Stock Price ------------
@@ -204,9 +204,9 @@ df_twoprods %>%
 
 #########################################################################.
 # 3 COMPARATIVE STATISTICS --------
-# Comparison of Sales vs Historical Data (Previous Days) 
-# If the current data could have been generated from a population 
-# with a specified mean.
+# Comparison of Sales vs Historical Data of daily Sales 
+# Verification if the current data could have been generated 
+# from a population with a specified mean.
 # T-test: It is typically implemented on small samples.
 
 # t = (x - mu ) / standard error 
@@ -230,6 +230,9 @@ prod1_hist <- bind_rows(
               bind_cols(variable="Product2", value=df_twoprods$Product2),
               hist_sales
                         )
+dim(prod1_hist)
+head(prod1_hist,20)
+
 
 ggplot(data = prod1_hist, 
        aes(x = variable, y = value, fill = variable)) +
@@ -241,7 +244,6 @@ ggplot(data = prod1_hist,
   scale_fill_manual(values = c("historical" = "lightgray", 
                                "Product1" = "lightblue", 
                                "Product2" = "pink")) 
-  #theme_minimal()
 
 # * 3.1 Hypothesis Testing: ONE SAMPLE t-test ------
 
@@ -262,16 +264,17 @@ t_result
 # T-TEST two.sided
 
 # NULL HYPOTHESIS: The sample and the historical sales have the same mean
-# ALTERNATE HYPOTHESIS: The sample and the historical sales have different mean
-
-t.test(x=df_twoprods$Product1, mu=historical_mean, alternative = "two.sided")
+# ALTERNATIVE HYPOTHESIS: The sample and the historical sales have different mean
+t.test(x=df_twoprods$Product1, 
+       mu=historical_mean, 
+       alternative = "two.sided")
 # p-value = 0.1109 probability that I am wrong with the alternate hypothesis
 # The null hypothesis can not be rejected.
 
 # T-TEST Lower 
 
-# NULL HYPOTHESIS: The sample is NOT lower than the historical sales
-# ALTERNATE HYPOTHESIS: The sample is LOWER than the the historical sales mean
+# Null Hypothesis: The sample is NOT lower than the historical sales
+# Alternative Hypothesis: The sample is LOWER than the the historical sales mean
 
 t.test(x=df_twoprods$Product1, mu=historical_mean, alternative = "less")
 # The null hypothesis can not be rejected.
@@ -283,9 +286,8 @@ t.test(x=df_twoprods$Product2, mu=historical_mean, alternative = "less")
 #########################################################################################.
 # * 3.2 Hypothesis Testing: TWO SAMPLE T-TEST --------------- 
 # Comparison of two different variables within the same data
-# NULL HYPOTHESIS: THE MEANS ARE EQUAL
-# ALTERNATE HYPOTHESIS: The means differ.
-
+# Null Hypothesis: THE MEANS ARE EQUAL
+# Alternative Hypothesis: The means differ.
 # Question: Were the Product1 sales higher than the the Product2 sales?
 
 #######################################################.
@@ -300,7 +302,7 @@ t.test(df_twoprods$Product1,
 # The null hypothesis is rejected. 
 
 #######################################################.
-# NULL hypothesis: Product1 sales are less than Product2 sales (negative difference)
+# NULL hypothesis: Product1 sales are less or equal than Product2 sales (negative or zero difference)
 # alternative hypothesis: true difference in means is greater than 0
 t.test(df_twoprods$Product1, 
        df_twoprods$Product2, 
@@ -332,10 +334,7 @@ t.test(df_twoprods$Product1,
 # P(T<=t) two-tail	1.87862E-07	
 # t Critical two-tail	2.000297822	
 
-#####################################################################.
-# 4 ASSOCIATIVE STATISTICS ----------
-
-# * 4.1 paired Two Sample T-Test------
+# * 3.4 paired Two Sample T-Test------
 # Paired Comparison of Sales for the same days on years 2015 - 2016
 # The only difference is that there were not MarketingSpend on 2015
 # NULL HYPOTHESIS: No statistically significant difference
@@ -343,9 +342,29 @@ t.test(df_twoprods$Product1,
 # alternative hypothesis: true mean difference is not equal to 0
 # Compare Sales on the same dates, 
 
-# Only Year 2015
-df_twoprods_2015  <- df_twoprodsBothYears %>% filter(year(Date) == 2015)
+# Line   
+# 2016
+sales2016 <- df_twoprods %>% 
+    mutate(day = lubridate::day(Date), year = 'Y2016') %>% 
+    select(day, year, Sales)
 
+# Only Year 2015
+sales2015 <- df_twoprodsBothYears %>% 
+  filter(year(Date) == 2015) %>% 
+    mutate(day = lubridate::day(Date), year = 'Y2015') %>% 
+    select(day,year,Sales)
+
+# Line Chart comparison Sales 2015 vs 2016
+ggplot(data = bind_rows(sales2016, sales2015),
+       aes(x = day, y = Sales, color = year, group = year)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Line Chart for Sales 2016 vs 2015 (without Marketing Spend)",
+    x = "Date",
+    y = "Value"
+  ) 
+
+# Hypothesis Testing
 t.test(df_twoprods$Sales, 
        df_twoprods_2015$Sales, paired = TRUE, alternative = "two.sided")
 # The probability to see these results are  p= 9.088e-09
@@ -368,9 +387,9 @@ t.test(df_twoprods$Sales,
 # P(T<=t) two-tail	9.08753E-09      <--- Same result
 # t Critical two-tail	2.042272456
 
-# * 4.2 Analysis of Variance (ANOVA) -------------
+# * 3.5 Analysis of Variance (ANOVA) -------------
 
-# * * 4.2.1 One Way ANOVA ---------------------
+# * * 3.5.1 One Way ANOVA ---------------------
 
 # Analyzing the effect of Method on Sales
 
@@ -397,7 +416,7 @@ summary(aov(Sales ~ StockPrice, data = df_twoprods))
 # It suggests that "StockPrice" significantly affects "Sales"
 
 
-# * * 4.2.2 Two-Way ANOVA --------
+# * * 3.5.2 Two-Way ANOVA --------
 
 # To analyze the impact of two independent variables: "Method," "StockPrice"
 
@@ -406,21 +425,22 @@ summary(aov(Sales ~ Method + StockPrice, data = df_twoprods))
 # "StockPrice" p-value = 0.0117. It has a significant effect on "Sales"
 # "Method" does not have a significant effect on "Sales" (p-value  0.4262)
 
-# * * 4.2.3 Multi-way ANOVA -----------
+# * * 3.5.3 Multi-way ANOVA -----------
 
-# Perform a multi-way ANOVA involving three or more independent variables,
-# independent variables: "Method," "StockPrice," and "MarketingSpend"
+# Perform a multi-way ANOVA involving three 
+# or more independent variables,
+# independent variables: "Method," "StockPrice," 
+# "MarketingSpend" and "Price"
 
-# Assuming you have loaded your dataset into df_twoprods
-# Perform a multi-way ANOVA
-
-anova_result <- aov(Sales ~ Method + StockPrice + MarketingSpend, data = df_twoprods)
+anova_result <- aov(Sales ~ Method + StockPrice + 
+                    MarketingSpend, 
+                    data = df_twoprods)
 
 # Print the ANOVA summary
 summary(anova_result)
 
-# * * 4.2.4 Combination of Method and Product --------
-# To create a recap of sales by the Combination of Method and Product ----
+# * * 3.5.4 ANOVA for Combination of Method and Product ------
+# To create a recap of sales by the Combination of Method and Product
 # calculate the sums of sales for each combination. 
 
 recap_df <- data.frame(
@@ -438,6 +458,16 @@ summary(aov(M01_Prod1 ~ ., data = recap_df ))
 summary(aov(M01_Prod2 ~ ., data = recap_df ))
 summary(aov(M02_Prod1 ~ ., data = recap_df ))
 summary(aov(M02_Prod2 ~ ., data = recap_df ))
+
+#####################################################################.
+# 4 ASSOCIATIVE STATISTICS ----------
+
+correlation_matrix <- cor(df_twoprods[,c("Product1", "Product2", 
+                   "StockPrice", "MarketingSpend", "Price")])
+correlation_matrix
+
+heatmaply::heatmaply(correlation_matrix, colorScale = "magma")
+
 
 #####################################################################.
 # 5 PREDICTIVE STATISTICS ----------------------------

@@ -18,10 +18,16 @@ lapply(required_packages, library, character.only = TRUE)
 
 # 1 LOAD THE DATA - THREE MEASURES OF LOYALTY    -----------------------------
 
-path            <- "Data_Files"       
-dat   <- read.csv(paste0(path,"//Module3Lab2_loyaltydata.csv"))
+# Paths # Location of Source files
+setwd("D:/DataRepository/StatisticalAnalysis")
+getwd()
+# Read data file
+#path            <- "Data_Files"       
+# Loyalty of Clients
+dat   <- read.csv("Module3Lab2_loyaltydata.csv")
 
 head(dat,5)
+str(dat)
 
 # 2 CHECK MAIN PARAMETERS MEAN, MEDIAN, RANGE ------------ 
 summary(dat)
