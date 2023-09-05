@@ -3,7 +3,7 @@
 # SCRIPT: FREQUENCY CLAIMS TO ANALYZE ONE VARIABLE
 # USE CASE: VISUALIZE THE DISTRIBUTION OF ONE VARIABLE USING HISTOGRAM
 # EXAMPLE SOURCE: "Course: Data Science - Research Methods in R
-#                          - EDX / Microsoft. Module 3. Lab 1"
+#            - EDX / Microsoft. Module 3. Lab 1"
 ###################################################################.
 
 # 0 PREPARE INSTALL CALL PACKAGES -----------------------------------------
